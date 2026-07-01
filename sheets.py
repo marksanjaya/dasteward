@@ -10,7 +10,14 @@ SCOPES = [
 
 @st.cache_resource
 def get_workbook():
-    creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPES)
+    # Cek apakah running di Streamlit Cloud (pakai Secrets)
+    # atau lokal (pakai credentials.json)
+    try:
+        creds_dict = st.secrets["gcp_service_account"]
+        creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+    except FileNotFoundError:
+        creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPES)
+    
     client = gspread.authorize(creds)
     return client.open(config.SHEET_NAME)
 
